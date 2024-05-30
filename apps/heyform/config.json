@@ -1,1 +1,39 @@
-
+{
+  "$schema": "../schema.json",
+  "name": "Heyform",
+  "available": true,
+  "exposable": true,
+  "port": 8084,
+  "id": "heyform",
+  "tipi_version": 23,
+  "version": "26.0.13-apache",
+  "categories": [
+    "data"
+  ],
+  "description": "HeyForm is an open-source form builder that allows anyone to create engaging conversational forms for surveys, questionnaires, quizzes, and polls. No coding skills required.",
+  "short_desc": "Open-source form builder",
+  "author": "Heyform",
+  "source": "https://github.com/heyform/heyform",
+  "form_fields": [
+    {
+      "type": "random",
+      "label": "Session Key",
+      "max": 50,
+      "min": 3,
+      "required": true,
+      "env_variable": "HEYFORM_SESSION_KEY"
+    },
+    {
+      "type": "random",
+      "label": "Encryption Key",
+      "max": 50,
+      "min": 10,
+      "required": true,
+      "env_variable": "HEYFORM_ENCRYPTION_KEY"
+    }
+  ],
+  "supported_architectures": [
+    "arm64",
+    "amd64"
+  ]
+}
