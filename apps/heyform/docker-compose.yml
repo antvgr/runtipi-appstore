@@ -1,1 +1,79 @@
+# docker-compose.yml
+version: "3"
+services:
+  heyform:
+    container_name: heyform
+    image: heyform/community-edition:latest
+    restart: "always"
+    volumes:
+      # Perist uploaded images
+      - ./assets:/app/static/upload
+    depends_on:
+      - mongo
+      - redis
+    ports:
+      - "${APP_PORT}:8000"
+    environment:
+      # Your website homepage URL, e.g. http://form.yourcompany.com
+      APP_HOMEPAGE_URL: ${APP_DOMAIN}
+      SESSION_KEY: ${HEYFORM_SESSION_KEY}
+      FORM_ENCRYPTION_KEY: ${HEYFORM_ENCRYPTION_KEY}
+      MONGO_URI: "mongodb://mongo:27017/heyform"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mongo_heyform
+      - redis_heyform
+    networks:
+      - tipi_main_network
+    labels: # Use your editors search and replace feature to replace all instances of "myapp" with your app name in the traefik labels
+      # Main
+      traefik.enable: true
+      traefik.http.middlewares.heyform-web-redirect.redirectscheme.scheme: https
+      traefik.http.services.heyform.loadbalancer.server.port: 8000 # Should be the same as the app internal port so for this example 9443
+      # Web
+      traefik.http.routers.heyform-insecure.rule: Host(`${APP_DOMAIN}`)
+      traefik.http.routers.heyform-insecure.entrypoints: web
+      traefik.http.routers.heyform-insecure.service: heyform
+      traefik.http.routers.heyform-insecure.middlewares: heyform-web-redirect
+      # Websecure
+      traefik.http.routers.heyform.rule: Host(`${APP_DOMAIN}`)
+      traefik.http.routers.heyform.entrypoints: websecure
+      traefik.http.routers.heyform.service: heyform
+      traefik.http.routers.heyform.tls.certresolver: myresolver
+      # Local domain
+      traefik.http.routers.heyform-local-insecure.rule: Host(`heyform.${LOCAL_DOMAIN}`)
+      traefik.http.routers.heyform-local-insecure.entrypoints: web
+      traefik.http.routers.heyform-local-insecure.service: heyform
+      traefik.http.routers.heyform-local-insecure.middlewares: heyform-web-redirect
+      # Local domain secure
+      traefik.http.routers.heyform-local.rule: Host(`heyform.${LOCAL_DOMAIN}`)
+      traefik.http.routers.heyform-local.entrypoints: websecure
+      traefik.http.routers.heyform-local.service: heyform
+      traefik.http.routers.heyform-local.tls: true
+
+  mongo_heyform:
+    container_name: mongo_heyform
+    image: mongo:4.4.29
+    restart: "always"
+    volumes:
+      # Persist mongodb data
+      - ./database:/data/db
+    ports:
+      - "27017:27017"
+  networks:
+      - tipi_main_network
+
+  redis_heyform:
+    container_name: redis_heyform
+    image: redis
+    restart: "always"
+    command: "redis-server --appendonly yes"
+    volumes:
+      # Persist redis data
+      - ./redis:/data
+    ports:
+      - "6379:6379"
+  networks:
+      - tipi_main_network
 
